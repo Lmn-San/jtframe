@@ -29,6 +29,7 @@ module jtframe_6801mcu #(
     input              clk,
     input              rst,
     input              cen,
+    output             wait_cen,
     output             wrn,
     output             vma,
     output      [15:0] addr,
@@ -62,7 +63,6 @@ reg  [ 7:0] din;
 wire [ 7:0] ram_dout,
             p1_datadir, p2_datadir, p3_datadir, p4_datadir;
 reg         port_cs, ram_cs;
-wire        wait_cen;
 
 assign rom_addr  = addr[ROMW-1:0];
 assign intram_we = ram_cs & ~wrn;
