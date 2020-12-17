@@ -173,8 +173,8 @@ always @(posedge clk, negedge rst_n) begin
     end
 end
 
-always @(posedge clk)
-    cen_out <= (cen_in & gate) | rec;
+always @(*)
+    cen_out = (cen_in & gate) | rec;
 
 always @(posedge clk or negedge rst_n) begin
     if( !rst_n ) begin
