@@ -66,7 +66,7 @@ always @(*) begin
 end
 
 always @(posedge clk, posedge rst) begin
-    if( !rst ) begin
+    if( rst ) begin
         miss_cnt <= 3'd0;
     end else begin
         if( !start ) begin
