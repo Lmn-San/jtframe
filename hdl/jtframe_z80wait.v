@@ -119,6 +119,7 @@ module jtframe_z80wait #(parameter
 )(
     input       rst_n,
     input       clk,
+    input       start,
     input       cen_in,
     output reg  cen_out,
     output      gate,
@@ -144,7 +145,7 @@ reg  [3:0] miss_cnt;
 
 // wire bus_ok = (rom_ok||!rom_cs) && !dev_busy;
 
-assign gate    = !(rom_bad || dev_busy || locked );
+assign gate    = !(rom_bad || dev_busy || locked ) && start;
 assign rom_bad = (rom_cs && !rom_ok) || rom_cs_posedge;
 assign rec_en  = &{mreq_n, iorq_n, busak_n};
 
@@ -160,10 +161,14 @@ always @(posedge clk, negedge rst_n) begin
     if( !rst_n ) begin
         miss_cnt <= 4'd0;
     end else begin
-        if( cen_in && !gate ) begin
-            if( ~&miss_cnt ) miss_cnt <= miss_cnt+4'd1;
-        end else if( rec ) begin
-            if( miss_cnt ) miss_cnt <= miss_cnt - 4'd1;
+        if( !start ) begin
+            miss_cnt <= 4'd0;
+        end else begin
+            if( cen_in && !gate ) begin
+                if( ~&miss_cnt ) miss_cnt <= miss_cnt+4'd1;
+            end else if( rec ) begin
+                if( miss_cnt ) miss_cnt <= miss_cnt - 4'd1;
+            end
         end
     end
 end
