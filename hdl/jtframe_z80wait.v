@@ -113,10 +113,7 @@ end
 
 endmodule
 
-module jtframe_z80wait #(parameter
-    devcnt=2,
-    RECOVER=1
-)(
+module jtframe_z80wait #(parameter devcnt=2)(
     input       rst_n,
     input       clk,
     input       start,
@@ -151,10 +148,8 @@ assign rec_en  = &{mreq_n, iorq_n, busak_n};
 
 always @(*) begin
     rec = 0;
-    if( RECOVER ) begin
-        if( miss_cnt && !cen_in && rec_en )
-            rec = 1;
-    end
+    if( miss_cnt && !cen_in && rec_en )
+        rec = 1;
 end
 
 always @(posedge clk, negedge rst_n) begin
