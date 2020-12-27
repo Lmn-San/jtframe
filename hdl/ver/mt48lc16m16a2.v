@@ -810,7 +810,7 @@ module mt48lc16m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm,
                 (Ba == 2'b01) && ($time - RCD_chk1 < tRCD) ||
                 (Ba == 2'b10) && ($time - RCD_chk2 < tRCD) ||
                 (Ba == 2'b11) && ($time - RCD_chk3 < tRCD)) begin
-                $display("%m : at time %t ERROR: tRCD violation during Read", $time);
+                $display("%m : at time %t ERROR: tRCD violation during Read*", $time);
                 #100 $finish;
             end
 

@@ -34,7 +34,6 @@ module jtframe_board #(parameter
 
     input             clk_sys,
     input             clk_rom,
-    input             clk_vga,
 
     input  [ 6:0]     core_mod,
     // ROM access from game
@@ -411,6 +410,9 @@ jtframe_dip u_dip(
     .dip_fxlevel( dip_fxlevel   )
 );
 
+// support for 48MHz
+// Above 64MHz HF should be 1. SHIFTED depends on whether the SDRAM
+// clock is shift or not.
 jtframe_sdram_bank #(.AW(SDRAMW),.HF(0),.SHIFTED(1)) u_sdram(
     .rst        ( rst           ),
     .clk        ( clk_rom       ), // 96MHz = 32 * 6 MHz -> CL=2

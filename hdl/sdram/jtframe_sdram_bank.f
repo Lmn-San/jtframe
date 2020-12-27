@@ -7,3 +7,4 @@ jtframe_romrq.v
 jtframe_ram_2slots.v
 jtframe_rom_2slots.v
 jtframe_rom_3slots.v
+jtframe_rom_sync.v
