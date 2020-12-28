@@ -345,7 +345,6 @@ jtframe_mister #(
 u_frame(
     .clk_sys        ( clk_sys        ),
     .clk_rom        ( clk_rom        ),
-    .clk_vga        ( clk_sys        ),
     .pll_locked     ( pll_locked     ),
     // interface with microcontroller
     .status         ( status         ),
