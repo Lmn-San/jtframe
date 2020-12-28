@@ -289,7 +289,7 @@ wire [15:0] prog_data;
 `ifndef JTFRAME_SDRAM_BANKS
 wire [ 7:0]   prog_data8;
 `endif
-wire [ 1:0] prog_mask, prog_bank;
+wire [ 1:0] prog_mask, prog_ba;
 wire        prog_we, prog_rd, prog_rdy;
 
 // ROM access from game
@@ -413,7 +413,7 @@ u_frame(
     .prog_rd        ( prog_rd        ),
     .prog_we        ( prog_we        ),
     .prog_mask      ( prog_mask      ),
-    .prog_bank      ( prog_bank      ),
+    .prog_ba        ( prog_ba        ),
     .prog_rdy       ( prog_rdy       ),
 
     .downloading    ( downloading    ),

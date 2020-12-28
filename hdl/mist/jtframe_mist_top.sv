@@ -324,7 +324,7 @@ u_frame(
     .prog_rd        ( prog_rd        ),
     .prog_we        ( prog_we        ),
     .prog_mask      ( prog_mask      ),
-    .prog_bank      ( prog_ba        ),
+    .prog_ba        ( prog_ba        ),
     .prog_rdy       ( prog_rdy       ),
 
     .downloading    ( downloading    ),

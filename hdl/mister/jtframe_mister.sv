@@ -64,7 +64,7 @@ module jtframe_mister #(parameter
     input        [21:0] prog_addr,
     input        [15:0] prog_data,
     input        [ 1:0] prog_mask,
-    input        [ 1:0] prog_bank,
+    input        [ 1:0] prog_ba,
     input               prog_we,
     input               prog_rd,
     output              prog_rdy,
@@ -418,7 +418,7 @@ jtframe_board #(
 
     // ROM-load interface
     .prog_addr  ( prog_addr     ),
-    .prog_bank  ( prog_bank     ),
+    .prog_ba    ( prog_ba       ),
     .prog_rd    ( prog_rd       ),
     .prog_we    ( prog_we       ),
     .prog_data  ( prog_data     ),
