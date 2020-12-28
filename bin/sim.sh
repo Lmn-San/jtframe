@@ -169,11 +169,12 @@ if [ -z "$GAME_ROM_PATH" ]; then
 fi
 
 EXTRA="$EXTRA ${MACROPREFIX}GAME_ROM_PATH=\"${GAME_ROM_PATH}\""
-if [ -e "$GAME_ROM_PATH" ]; then
-    if [ -z "$GAME_ROM_LEN" ]; then
-        GAME_ROM_LEN=$(stat --dereference -c%s $GAME_ROM_PATH)
-    fi
-    EXTRA="$EXTRA ${MACROPREFIX}GAME_ROM_LEN=${GAME_ROM_LEN}"
+if [ ! -e "$GAME_ROM_PATH" ]; then
+    echo "Error: cannot find ROM file $GAME_ROM_PATH"
+    echo "       rom.bin as the default ROM file. A different path"
+    echo "       can be set by EXPORTing an environment variable"
+    echo "       called GAME_ROM_PATH"
+    exit 1
 fi
 
 while [ $# -gt 0 ]; do
@@ -435,6 +436,18 @@ esac
 done
 
 if [ $FIRMONLY = FIRMONLY ]; then exit 0; fi
+
+if [ -z "$GAME_ROM_LEN" ]; then
+    if [ -z "$LOADROM" ]; then
+        # ROM length is limited to 256 if the load process is ommitted
+        GAME_ROM_LEN=256
+    else
+        # Full length
+        GAME_ROM_LEN=$(stat --dereference -c%s $GAME_ROM_PATH)
+    fi
+fi
+EXTRA="$EXTRA ${MACROPREFIX}GAME_ROM_LEN=${GAME_ROM_LEN}"
+
 
 # Use this function to create
 # HEX files with initial contents for some of the RAMs
