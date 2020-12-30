@@ -465,8 +465,7 @@ if [ "$EXTRA" != "" ]; then
 fi
 
 EXTRA="$EXTRA ${MACROPREFIX}MEM_CHECK_TIME=$MEM_CHECK_TIME ${MACROPREFIX}SYSTOP=jt${SYSNAME}_mist"
-# macros for MiST
-EXTRA="$EXTRA ${MACROPREFIX}GAMETOP=jt${SYSNAME}_game ${MACROPREFIX}MISTTOP=jt${SYSNAME}_mist"
+
 
 # Add the PLL (MiST only)
 if [[ $TOP = mist_test || $TOP = mister_test ]]; then
@@ -490,6 +489,7 @@ if [ -n "$DEFFILE" ]; then
     sed -i /JTFRAME_CREDITS/d core.def
 else
     COREDEF=
+    EXTRA="$EXTRA ${MACROPREFIX}GAMETOP=jt${SYSNAME}_game"
 fi
 
 case $SIMULATOR in

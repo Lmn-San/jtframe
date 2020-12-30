@@ -111,7 +111,8 @@ spitx_sub u_sub(
 integer state, next, slow;
 reg hold;
 
-localparam CLKSPEED=8; // MiST is probably 28MHz or CLKSPEED=17.857
+localparam CLKSPEED=24; // MiST is probably 28MHz or CLKSPEED=17.857
+    // 8 is the fastest for 48MHz SDRAM access
 
 initial begin
     clk = 0;

@@ -231,8 +231,10 @@ data_io datain (
     .clk_sys        (SDRAM_CLK    ),
     .ioctl_addr     ( ioctl_addr  ),
     .ioctl_dout     ( ioctl_data  ),
+    .ioctl_din      (             ),
     .ioctl_wr       ( ioctl_wr    ),
     // unused
+    .ioctl_upload   (             ),
     .ioctl_fileext  (             ),
     .ioctl_filesize (             )
 );

@@ -122,7 +122,7 @@ wire [63:0]   status;
 wire [31:0]   joystick1, joystick2;
 wire [24:0]   ioctl_addr;
 wire [ 7:0]   ioctl_data;
-wire [ 7:0]   ioctl_data_out;
+wire [ 7:0]   ioctl_data2sd;
 wire          ioctl_wr;
 wire          ioctl_ram;
 
@@ -315,7 +315,7 @@ u_frame(
     // ROM load
     .ioctl_addr     ( ioctl_addr     ),
     .ioctl_data     ( ioctl_data     ),
-    .ioctl_data_out ( ioctl_data_out ),
+    .ioctl_data2sd  ( ioctl_data2sd  ),
     .ioctl_wr       ( ioctl_wr       ),
     .ioctl_ram      ( ioctl_ram      ),
 
@@ -458,7 +458,7 @@ u_game(
     .ioctl_wr    ( ioctl_wr       ),
 `ifdef CORE_NVRAM_SIZE
     .ioctl_ram   ( ioctl_ram      ),
-    .ioctl_data_out(ioctl_data_out),
+    .ioctl_data2sd(ioctl_data2sd  ),
 `endif
     // ROM load
     .downloading ( downloading    ),
