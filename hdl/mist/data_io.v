@@ -46,6 +46,12 @@ module data_io
 	output reg [31:0] ioctl_filesize      // file size
 );
 
+`ifdef SIMULATION
+initial begin
+    ioctl_index = 8'h1;
+end
+`endif
+
 parameter START_ADDR = 25'd0;
 parameter ROM_DIRECT_UPLOAD = 0;
 
