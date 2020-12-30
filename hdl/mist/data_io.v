@@ -90,9 +90,8 @@ always@(posedge SPI_SCK, posedge SPI_SS2) begin : SPI_RECEIVER
 	reg  [5:0] bytecnt;
 
 	if(SPI_SS2) begin
-		bytecnt     <= 0;
-		cnt         <= 0;
-        ioctl_index <= 8'h00;
+		bytecnt <= 0;
+		cnt     <= 0;
 	end	else begin
 		// don't shift in last bit. It is evaluated directly
 		// when writing to ram
