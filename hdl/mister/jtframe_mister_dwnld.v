@@ -16,18 +16,40 @@
     Version: 1.0
     Date: 28-2-2021 */
 
+/*
+
+DDRAM Signals
+
+{signal: [
+  {name: 'DDRAM_CLK',wave:'p.......|...'},
+  {name: 'DDRAM_RD',wave:'0.1|.0...|..'},
+  {name: 'DDRAM_BE',wave:'=.=.........',data:["00","FF"]},
+  {name: 'DDRAM_ADDR',wave:'xx=.........',data:["address"]},
+  {name: 'DDRAM_DOUT_READY',wave:'0.....1..|.0'},
+  {name: 'DDRAM_DOUT',wave:'xxxxxx=x|==x',data:["data0","data1","n-1","n"]},
+  {name: 'DDRAM_BUSY', wave: 'x01|0....|..'},
+  {},
+]}
+
+
+*/
+
 module jtframe_mister_dwnld(
     input             rst,
     input             clk,
 
     output reg        downloading,
+    input             dwnld_busy,
+
+    input             prog_we,
+    input             prog_rdy,
 
     input             hps_download, // signal indicating an active download
     input      [ 7:0] hps_index,        // menu index used to upload the file
     input             hps_wr,
     input      [26:0] hps_addr,         // in WIDE mode address will be incremented by 2
     input      [ 7:0] hps_dout,
-    output            hps_wait,
+    output reg        hps_wait,
 
     output            ioctl_rom_wr,
     output reg        ioctl_ram,
@@ -37,11 +59,9 @@ module jtframe_mister_dwnld(
     // Configuration
     output reg [ 6:0] core_mod,
     input      [31:0] status,
-    output     [31:0] dipsw
+    output     [31:0] dipsw,
 
-`ifdef JTFRAME_MR_DDRLOAD
     // DDR3 RAM
-    ,output           ddram_clk,
     input             ddram_busy,
     output     [ 7:0] ddram_burstcnt,
     output     [28:0] ddram_addr,
@@ -51,15 +71,12 @@ module jtframe_mister_dwnld(
     output     [63:0] ddram_din,
     output     [ 7:0] ddram_be,
     output            ddram_we
-`endif
 );
 
 localparam [7:0] IDX_ROM   = 8'h0,
                  IDX_MOD   = 8'h1,
                  IDX_NVRAM = 8'h2,
                  IDX_DIPSW = 8'd254;
-
-assign hps_wait = 0;
 
 always @(posedge clk) begin
     ioctl_ram   <= hps_download && hps_index==IDX_NVRAM;
@@ -104,11 +121,12 @@ assign ioctl_dout   = hps_dout;
 assign ioctl_addr   = hps_addr;
 
 // DDR ROM download
-reg  [ 4:0] ddram_cnt;
-/*
-wire [63:0] dump_data;
+localparam BW=7;
+reg  [BW-1:0] ddram_cnt;
+reg  [  26:0] dump_cnt;
+wire [  63:0] dump_data;
 
-jtframe_dual_ram #(.dw(64),.aw(5))) u_buffer(
+jtframe_dual_ram #(.dw(64),.aw(BW))) u_buffer(
     .clk0   ( clk       ),
     .clk1   ( clk       ),
     // Port 0: write
@@ -118,21 +136,23 @@ jtframe_dual_ram #(.dw(64),.aw(5))) u_buffer(
     .q0     (           ),
     // Port 1: read
     .data1  (           ),
-    .addr1  ( dump_cnt  ),
+    .addr1  ( dump_cnt[BW+2:3]  ),
     .we1    ( 1'b0      ),
     .q1     ( dump_data )
 );
-*/
 
-reg last_dwn, wr_latch;
+reg ddr_dwn, last_dwn, last_dwnbusy, wr_latch;
 
+// Detect DDR download start and stop conditions
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        ddram_cnt <= 5'd0;
         wr_latch  <= 0;
         last_dwn  <= 0;
+        ddr_dwn   <= 0;
+        hps_wait  <= 0;
     end else begin
         last_dwn <= hps_download;
+        last_dwnbusy <= dwnld_busy;
         if( hps_download && !last_dwn && hps_index==IDX_ROM) begin
             downloading <= 1;
             wr_latch    <= 0;
@@ -142,8 +162,94 @@ always @(posedge clk, posedge rst) begin
         if( !hps_download && last_dwn ) begin
             if( wr_latch )
                 downloading <= 0;   // regular download
+            else begin
+                ddr_dwn  <= 1;
+                hps_wait <= 1;
+            end
+        end
+        if( last_dwnbusy && !dwnld_busy ) begin
+            hps_wait    <= 0;
+            downloading <= 0;
+            ddr_dwn     <= 0;
         end
     end
 end
+
+
+////////// Read DDR
+// address="0x3000'0000"
+
+localparam PW = 28-BW;
+
+reg [PW-1:0] ddram_page;
+
+assign ddram_burstcnt = 8'h1 << (BW-1); // 128*8=1024
+assign ddram_addr = { 4'd3, ddram_page, {BW-3{1'b0}} };
+
+wire cnt_over = &ddram_cnt;
+reg tx_start, tx_done;
+reg ddram_wait;
+
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        ddram_cnt  <= {BW{1'b0}};
+        ddram_page <= {PW{1'b0}};
+        ddram_wait <= 0;
+        tx_start   <= 0;
+    end else if(!ddram_busy ) begin
+        if( ddr_dwn  ) begin
+            if( !ddram_wait ) begin
+                ddram_cnt  <= {BW{1'b0}};
+                tx_start   <= 0;
+                if( tx_done ) begin
+                    ddram_rd   <= 1;
+                    ddram_wait <= 1;
+                end
+            end else begin
+                ddram_rd <= 0;
+                if( ddram_dout_ready ) begin
+                    ddram_cnt <= ddram_cnt + 1'b1;
+                    if( cnt_over ) begin
+                        ddram_wait <= 0;
+                        tx_start   <= 1;
+                        ddram_page <= ddram_page + 1'd1;
+                    end
+                end
+            end
+        end else begin
+            ddram_rd <= 0;
+        end
+    end
+end
+
+reg [1:0] st;
+reg       next_wr;
+
+// Send to core
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        tx_done  <= 1;
+        dump_cnt <= 26'd0;
+    end else begin
+        if( tx_start ) begin
+            tx_done <= 0;
+            tx_cnt  <= 0;
+        end
+        if( !tx_done ) begin
+            if( st==0 )
+                dump_ser <= dump_data;
+            else if( st==2 && prog_rdy ) begin
+                dump_ser <= dump_ser>>8;
+                dump_cnt <= dump_cnt+1'd1;
+            end
+            next_wr <= st==0;
+            ioctl_rom_wr <= next_wr;
+            case( st )
+                default: st <= st+1'd1;
+                1: if( prog_we  ) st <= st+1'd1;
+                2: if( prog_rdy ) st <= 2'd0;
+            end
+        end
+    end
 
 endmodule

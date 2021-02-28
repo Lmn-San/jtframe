@@ -259,6 +259,7 @@ jtframe_mister_dwnld u_dwnld(
     .clk            ( clk_rom        ),
 
     .downloading    ( downloading    ),
+    .dwnld_busy     ( dwnld_busy     ),
 
     .hps_download   ( hps_download   ),
     .hps_index      ( hps_index[7:0] ),
