@@ -303,7 +303,7 @@ wire        dip_pause, dip_flip, dip_test;
 wire [31:0] dipsw;
 
 wire        ioctl_wr;
-wire [24:0] ioctl_addr;
+wire [26:0] ioctl_addr; // up to 128MB
 wire [ 7:0] ioctl_data;
 
 wire [ 9:0] game_joy1, game_joy2, game_joy3, game_joy4;
@@ -477,10 +477,10 @@ u_frame(
 
     // ROM load
     .ioctl_addr     ( ioctl_addr     ),
-    .ioctl_data     ( ioctl_data     ),
+    .ioctl_dout     ( ioctl_data     ),
     .ioctl_rom_wr   ( ioctl_wr       ),
     .ioctl_ram      ( ioctl_ram      ),
-    .ioctl_data2sd  ( ioctl_data2sd  ),
+    .ioctl_din      ( ioctl_data2sd  ),
 
     .prog_addr      ( prog_addr      ),
     .prog_data      ( prog_data      ),
