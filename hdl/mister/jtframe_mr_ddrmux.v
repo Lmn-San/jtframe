@@ -67,7 +67,7 @@ always @(*) begin
     endcase
 end
 
-assign ddr_clk = DDREN[0] & clk;
+assign ddr_clk = DDREN && clk;
 
 // This simple mux allows for bad data transfers when switching from ROM download
 // to the frame buffer, but it shouldn't be a problem

@@ -254,19 +254,6 @@ pll pll(
     .outclk_5   ( clk96sh    )
 );
 
-// Screen rotation
-wire [ 7:0] rot_burstcnt;
-wire [28:0] rot_addr;
-wire [63:0] rot_dout;
-wire        rot_we, rot_busy;
-wire [ 7:0] rot_be;
-
-// Fast DDR load
-wire [ 7:0] ddrld_burstcnt;
-wire [28:0] ddrld_addr;
-wire        ddrld_rd;
-wire [ 7:0] ddrld_be;
-
 `ifdef JTFRAME_SDRAM96
     assign clk_rom = clk96;
     assign clk_sys = clk96;
@@ -391,41 +378,15 @@ assign AUDIO_S = `SIGNED_SND;
 assign prog_data = {2{prog_data8}};
 `endif
 
-jtframe_mr_ddrmux u_ddrmux(
-    .rst            ( rst             ),
-    .clk            ( clk             ),
-    .downloading    ( downloading     ),
-    // Fast DDR load
-    .ddrld_burstcnt ( ddrld_burstcnt  ),
-    .ddrld_addr     ( ddrld_addr      ),
-    .ddrld_rd       ( ddrld_rd        ),
-    .ddrld_be       ( ddrld_be        ),
-    // Rotation signals
-    .rot_burstcnt   ( rot_burstcnt    ),
-    .rot_addr       ( rot_addr        ),
-    .rot_rd         ( rot_rd          ),
-    .rot_we         ( rot_we          ),
-    .rot_be         ( rot_be          ),
-    .rot_busy       ( rot_busy        ),
-    // DDR Signals
-    .ddr_clk        ( DDRAM_CLK       ),
-    .ddr_busy       ( DDRAM_BUSY      ),
-    .ddr_burstcnt   ( DDRAM_BURSTCNT  ),
-    .ddr_addr       ( DDRAM_ADDR      ),
-    .ddr_rd         ( DDRAM_RD        ),
-    .ddr_we         ( DDRAM_WE        ),
-    .ddr_be         ( DDRAM_BE        )
-);
-
 jtframe_mister #(
     .CONF_STR      ( CONF_STR       ),
-    .BUTTONS       ( GAME_BUTTONS        ),
+    .BUTTONS       ( GAME_BUTTONS   ),
     .COLORW        ( COLORW         )
     `ifdef VIDEO_WIDTH
-    ,.VIDEO_WIDTH   ( `VIDEO_WIDTH   )
+    ,.VIDEO_WIDTH  ( `VIDEO_WIDTH   )
     `endif
     `ifdef VIDEO_HEIGHT
-    ,.VIDEO_HEIGHT  ( `VIDEO_HEIGHT  )
+    ,.VIDEO_HEIGHT ( `VIDEO_HEIGHT  )
     `endif
 )
 u_frame(
@@ -466,20 +427,20 @@ u_frame(
     .FB_PAL_DOUT    ( FB_PAL_DOUT    ),
     .FB_PAL_DIN     ( FB_PAL_DIN     ),
     .FB_PAL_WR      ( FB_PAL_WR      ),
+    `endif
 
-    //muxed
-    .DDRAM_BURSTCNT ( rot_burstcnt   ),
-    .DDRAM_ADDR     ( rot_addr       ),
-    .DDRAM_BE       ( rot_be         ),
-    .DDRAM_WE       ( rot_we         ),
-    .DDRAM_BUSY     ( rot_busy       ),
-    // umuxed
-    .DDRAM_CLK      (                ), // same as clk_rom
+    // DDR interface
+    .DDRAM_CLK      ( DDRAM_CLK      ), // same as clk_rom
+    .DDRAM_BURSTCNT ( DDRAM_BURSTCNT ),
+    .DDRAM_ADDR     ( DDRAM_ADDR     ),
+    .DDRAM_BE       ( DDRAM_BE       ),
+    .DDRAM_WE       ( DDRAM_WE       ),
+    .DDRAM_BUSY     ( DDRAM_BUSY     ),
     .DDRAM_DOUT_READY(DDRAM_DOUT_READY ),
     .DDRAM_DOUT     ( DDRAM_DOUT     ),
     .DDRAM_RD       ( DDRAM_RD       ),
     .DDRAM_DIN      ( DDRAM_DIN      ),
-    `endif
+
     // SDRAM interface
     .SDRAM_CLK      ( SDRAM_CLK      ),
     .SDRAM_DQ       ( SDRAM_DQ       ),

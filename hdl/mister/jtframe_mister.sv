@@ -75,6 +75,7 @@ module jtframe_mister #(parameter
     output [23:0]   FB_PAL_DOUT,
     input  [23:0]   FB_PAL_DIN,
     output          FB_PAL_WR,
+ `endif
 
     output          DDRAM_CLK,
     input           DDRAM_BUSY,
@@ -86,7 +87,6 @@ module jtframe_mister #(parameter
     output [63:0]   DDRAM_DIN,
     output  [7:0]   DDRAM_BE,
     output          DDRAM_WE,
- `endif
 
     // DDR3 RAM
     input           ddram_busy,
@@ -216,6 +216,19 @@ wire        hps_download, hps_wr, hps_wait;
 wire [15:0] hps_index;
 wire [26:0] hps_addr;
 wire [ 7:0] hps_dout;
+
+// Screen rotation
+wire [ 7:0] rot_burstcnt;
+wire [28:0] rot_addr;
+wire [63:0] rot_dout;
+wire        rot_we, rot_rd, rot_busy;
+wire [ 7:0] rot_be;
+
+// Fast DDR load
+wire [ 7:0] ddrld_burstcnt;
+wire [28:0] ddrld_addr;
+wire        ddrld_rd;
+wire [ 7:0] ddrld_be;
 
 assign { voffset, hoffset } = status[31:24];
 
@@ -461,15 +474,43 @@ screen_rotate u_rotate(
     .FB_VBL         ( FB_VBL            ),
     .FB_LL          ( FB_LL             ),
 
-    .DDRAM_CLK      ( DDRAM_CLK         ),
-    .DDRAM_BUSY     ( DDRAM_BUSY        ),
-    .DDRAM_BURSTCNT ( DDRAM_BURSTCNT    ),
-    .DDRAM_ADDR     ( DDRAM_ADDR        ),
-    .DDRAM_DIN      ( DDRAM_DIN         ),
-    .DDRAM_BE       ( DDRAM_BE          ),
-    .DDRAM_WE       ( DDRAM_WE          ),
-    .DDRAM_RD       ( DDRAM_RD          )
+    //muxed
+    .DDRAM_BUSY     ( rot_busy       ),
+    .DDRAM_BURSTCNT ( rot_burstcnt   ),
+    .DDRAM_ADDR     ( rot_addr       ),
+    .DDRAM_BE       ( rot_be         ),
+    .DDRAM_WE       ( rot_we         ),
+    .DDRAM_RD       ( rot_rd         ),
+    // umuxed
+    .DDRAM_CLK      (                ), // same as clk_rom
+    .DDRAM_DIN      ( DDRAM_DIN      )
 );
 `endif
+
+jtframe_mr_ddrmux u_ddrmux(
+    .rst            ( rst             ),
+    .clk            ( clk_sys         ),
+    .downloading    ( downloading     ),
+    // Fast DDR load
+    .ddrld_burstcnt ( ddrld_burstcnt  ),
+    .ddrld_addr     ( ddrld_addr      ),
+    .ddrld_rd       ( ddrld_rd        ),
+    .ddrld_be       ( ddrld_be        ),
+    // Rotation signals
+    .rot_burstcnt   ( rot_burstcnt    ),
+    .rot_addr       ( rot_addr        ),
+    .rot_rd         ( rot_rd          ),
+    .rot_we         ( rot_we          ),
+    .rot_be         ( rot_be          ),
+    .rot_busy       ( rot_busy        ),
+    // DDR Signals
+    .ddr_clk        ( DDRAM_CLK       ),
+    .ddr_busy       ( DDRAM_BUSY      ),
+    .ddr_burstcnt   ( DDRAM_BURSTCNT  ),
+    .ddr_addr       ( DDRAM_ADDR      ),
+    .ddr_rd         ( DDRAM_RD        ),
+    .ddr_we         ( DDRAM_WE        ),
+    .ddr_be         ( DDRAM_BE        )
+);
 
 endmodule
