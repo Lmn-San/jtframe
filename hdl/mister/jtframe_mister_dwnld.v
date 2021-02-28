@@ -116,17 +116,14 @@ end
     end
 `endif
 
-assign ioctl_rom_wr = hps_wr && (hps_index==IDX_ROM || hps_index==IDX_NVRAM);
-assign ioctl_dout   = hps_dout;
-assign ioctl_addr   = hps_addr;
-
 // DDR ROM download
 localparam BW=7;
 reg  [BW-1:0] ddram_cnt;
 reg  [  26:0] dump_cnt;
 wire [  63:0] dump_data;
+reg  [  63:0] dump_ser;
 
-jtframe_dual_ram #(.dw(64),.aw(BW))) u_buffer(
+jtframe_dual_ram #(.dw(64),.aw(BW)) u_buffer(
     .clk0   ( clk       ),
     .clk1   ( clk       ),
     // Port 0: write
@@ -142,6 +139,15 @@ jtframe_dual_ram #(.dw(64),.aw(BW))) u_buffer(
 );
 
 reg ddr_dwn, last_dwn, last_dwnbusy, wr_latch;
+reg dump_we;
+
+// download signals mux
+always @(*) begin
+    ioctl_rom_wr = ddr_dwn ? dump_we :
+                             hps_wr && (hps_index==IDX_ROM || hps_index==IDX_NVRAM);
+    ioctl_dout   = ddr_dwn ? dump_ser[7:0] : hps_dout;
+    ioctl_addr   = ddr_dwn ? dump_cnt : hps_addr;
+end
 
 // Detect DDR download start and stop conditions
 always @(posedge clk, posedge rst) begin
@@ -175,7 +181,6 @@ always @(posedge clk, posedge rst) begin
     end
 end
 
-
 ////////// Read DDR
 // address="0x3000'0000"
 
@@ -201,7 +206,7 @@ always @(posedge clk, posedge rst) begin
             if( !ddram_wait ) begin
                 ddram_cnt  <= {BW{1'b0}};
                 tx_start   <= 0;
-                if( tx_done ) begin
+                if( tx_done && !tx_start ) begin
                     ddram_rd   <= 1;
                     ddram_wait <= 1;
                 end
@@ -217,24 +222,27 @@ always @(posedge clk, posedge rst) begin
                 end
             end
         end else begin
-            ddram_rd <= 0;
+            ddram_rd   <= 0;
+            tx_start   <= 0;
+            ddram_wait <= 0;
         end
     end
 end
 
-reg [1:0] st;
-reg       next_wr;
+reg [ 1:0] st;
+reg        next_wr;
 
 // Send to core
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
         tx_done  <= 1;
-        dump_cnt <= 26'd0;
+        dump_cnt <= 27'd0;
+        dump_we  <= 0;
     end else begin
         if( tx_start ) begin
             tx_done <= 0;
-            tx_cnt  <= 0;
-        end
+            st      <= 2'd0;
+        end else
         if( !tx_done ) begin
             if( st==0 )
                 dump_ser <= dump_data;
@@ -242,14 +250,16 @@ always @(posedge clk, posedge rst) begin
                 dump_ser <= dump_ser>>8;
                 dump_cnt <= dump_cnt+1'd1;
             end
-            next_wr <= st==0;
-            ioctl_rom_wr <= next_wr;
+            dump_we <= st==2'd1;
             case( st )
                 default: st <= st+1'd1;
-                1: if( prog_we  ) st <= st+1'd1;
-                2: if( prog_rdy ) st <= 2'd0;
-            end
+                2: if( prog_rdy ) begin
+                    st <= &dump_cnt[2:0] ? 2'd0 : 2'd1;
+                    if( &dump_cnt[BW-1:0] ) tx_done<=1;
+                end
+            endcase
         end
     end
+end
 
 endmodule
