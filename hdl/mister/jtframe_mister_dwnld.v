@@ -62,7 +62,6 @@ localparam [7:0] IDX_ROM   = 8'h0,
 assign hps_wait = 0;
 
 always @(posedge clk) begin
-    downloading <= hps_download && hps_index==IDX_ROM;
     ioctl_ram   <= hps_download && hps_index==IDX_NVRAM;
 end
 
@@ -104,12 +103,14 @@ assign ioctl_rom_wr = hps_wr && (hps_index==IDX_ROM || hps_index==IDX_NVRAM);
 assign ioctl_dout   = hps_dout;
 assign ioctl_addr   = hps_addr;
 
+// DDR ROM download
+reg  [ 4:0] ddram_cnt;
 /*
 wire [63:0] dump_data;
 
 jtframe_dual_ram #(.dw(64),.aw(5))) u_buffer(
-    .clk0   ( clk   ),
-    .clk1   ( clk   ),
+    .clk0   ( clk       ),
+    .clk1   ( clk       ),
     // Port 0: write
     .data0  ( ddram_din ),
     .addr0  ( ddram_cnt ),
@@ -122,4 +123,27 @@ jtframe_dual_ram #(.dw(64),.aw(5))) u_buffer(
     .q1     ( dump_data )
 );
 */
+
+reg last_dwn, wr_latch;
+
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        ddram_cnt <= 5'd0;
+        wr_latch  <= 0;
+        last_dwn  <= 0;
+    end else begin
+        last_dwn <= hps_download;
+        if( hps_download && !last_dwn && hps_index==IDX_ROM) begin
+            downloading <= 1;
+            wr_latch    <= 0;
+        end else begin
+            if( hps_wr && hps_index==IDX_ROM ) wr_latch <= 1;
+        end
+        if( !hps_download && last_dwn ) begin
+            if( wr_latch )
+                downloading <= 0;   // regular download
+        end
+    end
+end
+
 endmodule
