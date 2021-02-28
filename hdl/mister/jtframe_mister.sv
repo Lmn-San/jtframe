@@ -57,7 +57,7 @@ module jtframe_mister #(parameter
     output          SDRAM_CKE,      // SDRAM Clock Enable
 
     // Signals to rotate the screen
-    `ifdef JTFRAME_VERTICAL
+`ifdef JTFRAME_VERTICAL
     output          FB_EN,
     output  [4:0]   FB_FORMAT,
     output [11:0]   FB_WIDTH,
@@ -86,7 +86,18 @@ module jtframe_mister #(parameter
     output [63:0]   DDRAM_DIN,
     output  [7:0]   DDRAM_BE,
     output          DDRAM_WE,
-    `endif
+ `endif
+
+    // DDR3 RAM
+    input           ddram_busy,
+    output   [ 7:0] ddram_burstcnt,
+    output   [28:0] ddram_addr,
+    input    [63:0] ddram_dout,
+    input           ddram_dout_ready,
+    output          ddram_rd,
+    output   [63:0] ddram_din,
+    output   [ 7:0] ddram_be,
+    output          ddram_we,
 
     // ROM programming
     output       [26:0] ioctl_addr,

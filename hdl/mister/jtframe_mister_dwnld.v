@@ -38,9 +38,10 @@ module jtframe_mister_dwnld(
     output reg [ 6:0] core_mod,
     input      [31:0] status,
     output     [31:0] dipsw
-/*
+
+`ifdef JTFRAME_MR_DDRLOAD
     // DDR3 RAM
-    output            ddram_clk,
+    ,output           ddram_clk,
     input             ddram_busy,
     output     [ 7:0] ddram_burstcnt,
     output     [28:0] ddram_addr,
@@ -49,9 +50,8 @@ module jtframe_mister_dwnld(
     output            ddram_rd,
     output     [63:0] ddram_din,
     output     [ 7:0] ddram_be,
-    output            ddram_we,
-*/
-
+    output            ddram_we
+`endif
 );
 
 localparam [7:0] IDX_ROM   = 8'h0,
