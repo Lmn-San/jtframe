@@ -228,7 +228,6 @@ wire [ 7:0] rot_be;
 wire [ 7:0] ddrld_burstcnt;
 wire [28:0] ddrld_addr;
 wire        ddrld_rd;
-wire [ 7:0] ddrld_be;
 
 assign { voffset, hoffset } = status[31:24];
 
@@ -276,7 +275,15 @@ jtframe_mister_dwnld u_dwnld(
     // Configuration
     .core_mod       ( core_mod       ),
     .status         ( status         ),
-    .dipsw          ( dipsw          )
+    .dipsw          ( dipsw          ),
+
+    // DDR
+    .ddram_busy     ( DDRAM_BUSY       ),
+    .ddram_burstcnt ( ddrld_burstcnt   ),
+    .ddram_addr     ( ddrld_addr       ),
+    .ddram_dout     ( DDRAM_DOUT       ),
+    .ddram_dout_ready(DDRAM_DOUT_READY ),
+    .ddram_rd       ( ddrld_rd         )
 );
 
 hps_io #( .STRLEN($size(CONF_STR)/8), .PS2DIV(32), .WIDE(JTFRAME_MR_FASTIO) ) u_hps_io
@@ -453,27 +460,27 @@ jtframe_board #(
 
 `ifdef JTFRAME_VERTICAL
 screen_rotate u_rotate(
-    .CLK_VIDEO      ( scan2x_clk        ),
-    .CE_PIXEL       ( scan2x_cen        ),
+    .CLK_VIDEO      ( scan2x_clk     ),
+    .CE_PIXEL       ( scan2x_cen     ),
 
-    .VGA_R          ( scan2x_r          ),
-    .VGA_G          ( scan2x_g          ),
-    .VGA_B          ( scan2x_b          ),
-    .VGA_HS         ( scan2x_hs         ),
-    .VGA_VS         ( scan2x_vs         ),
-    .VGA_DE         ( scan2x_de         ),
+    .VGA_R          ( scan2x_r       ),
+    .VGA_G          ( scan2x_g       ),
+    .VGA_B          ( scan2x_b       ),
+    .VGA_HS         ( scan2x_hs      ),
+    .VGA_VS         ( scan2x_vs      ),
+    .VGA_DE         ( scan2x_de      ),
 
-    .rotate_ccw     ( 1'b0              ),
-    .no_rotate      ( ~rotate[0]        ),
+    .rotate_ccw     ( 1'b0           ),
+    .no_rotate      ( ~rotate[0]     ),
 
-    .FB_EN          ( FB_EN             ),
-    .FB_FORMAT      ( FB_FORMAT         ),
-    .FB_WIDTH       ( FB_WIDTH          ),
-    .FB_HEIGHT      ( FB_HEIGHT         ),
-    .FB_BASE        ( FB_BASE           ),
-    .FB_STRIDE      ( FB_STRIDE         ),
-    .FB_VBL         ( FB_VBL            ),
-    .FB_LL          ( FB_LL             ),
+    .FB_EN          ( FB_EN          ),
+    .FB_FORMAT      ( FB_FORMAT      ),
+    .FB_WIDTH       ( FB_WIDTH       ),
+    .FB_HEIGHT      ( FB_HEIGHT      ),
+    .FB_BASE        ( FB_BASE        ),
+    .FB_STRIDE      ( FB_STRIDE      ),
+    .FB_VBL         ( FB_VBL         ),
+    .FB_LL          ( FB_LL          ),
 
     //muxed
     .DDRAM_BUSY     ( rot_busy       ),
@@ -496,7 +503,6 @@ jtframe_mr_ddrmux u_ddrmux(
     .ddrld_burstcnt ( ddrld_burstcnt  ),
     .ddrld_addr     ( ddrld_addr      ),
     .ddrld_rd       ( ddrld_rd        ),
-    .ddrld_be       ( ddrld_be        ),
     // Rotation signals
     .rot_burstcnt   ( rot_burstcnt    ),
     .rot_addr       ( rot_addr        ),

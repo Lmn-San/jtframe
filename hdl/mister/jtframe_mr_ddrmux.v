@@ -24,7 +24,6 @@ module jtframe_mr_ddrmux(
     input   [ 7:0] ddrld_burstcnt,
     input   [28:0] ddrld_addr,
     input          ddrld_rd,
-    input   [ 7:0] ddrld_be,
     // Rotation signals
     input   [ 7:0] rot_burstcnt,
     input   [28:0] rot_addr,
@@ -34,7 +33,7 @@ module jtframe_mr_ddrmux(
     output         rot_busy,
     // DDR Signals
     output         ddr_clk,
-    output         ddr_busy,
+    input          ddr_busy,
     output  [ 7:0] ddr_burstcnt,
     output  [28:0] ddr_addr,
     output         ddr_rd,
@@ -75,7 +74,7 @@ assign ddr_clk = DDREN && clk;
 assign ddr_burstcnt = ddrld_en ? ddrld_burstcnt : rot_burstcnt;
 assign ddr_addr     = ddrld_en ? ddrld_addr     : rot_addr;
 assign ddr_rd       = ddrld_en ? ddrld_rd       : rot_rd;
-assign ddr_be       = ddrld_en ? ddrld_be       : rot_be;
+assign ddr_be       = ddrld_en ? 8'hff          : rot_be;
 assign ddr_we       = ddrld_en ? 1'b0           : rot_we;
 assign rot_busy     = ddrld_en | ddr_busy;
 

@@ -67,10 +67,7 @@ module jtframe_mister_dwnld(
     output     [28:0] ddram_addr,
     input      [63:0] ddram_dout,
     input             ddram_dout_ready,
-    output            ddram_rd,
-    output     [63:0] ddram_din,
-    output     [ 7:0] ddram_be,
-    output            ddram_we
+    output            ddram_rd
 );
 
 localparam [7:0] IDX_ROM   = 8'h0,
@@ -122,20 +119,21 @@ reg  [BW-1:0] ddram_cnt;
 reg  [  26:0] dump_cnt;
 wire [  63:0] dump_data;
 reg  [  63:0] dump_ser;
+reg           tx_start, tx_done;
 
 jtframe_dual_ram #(.dw(64),.aw(BW)) u_buffer(
-    .clk0   ( clk       ),
-    .clk1   ( clk       ),
+    .clk0   ( clk        ),
+    .clk1   ( clk        ),
     // Port 0: write
-    .data0  ( ddram_din ),
-    .addr0  ( ddram_cnt ),
-    .we0    ( ddram_we  ),
-    .q0     (           ),
+    .data0  ( ddram_dout ),
+    .addr0  ( ddram_cnt  ),
+    .we0    ( ~tx_done   ),
+    .q0     (            ),
     // Port 1: read
-    .data1  (           ),
+    .data1  (            ),
     .addr1  ( dump_cnt[BW+2:3]  ),
-    .we1    ( 1'b0      ),
-    .q1     ( dump_data )
+    .we1    ( 1'b0       ),
+    .q1     ( dump_data  )
 );
 
 reg ddr_dwn, last_dwn, last_dwnbusy, wr_latch;
@@ -192,7 +190,6 @@ assign ddram_burstcnt = 8'h1 << (BW-1); // 128*8=1024
 assign ddram_addr = { 4'd3, ddram_page, {BW-3{1'b0}} };
 
 wire cnt_over = &ddram_cnt;
-reg tx_start, tx_done;
 reg ddram_wait;
 
 always @(posedge clk, posedge rst) begin
