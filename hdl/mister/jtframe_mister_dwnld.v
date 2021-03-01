@@ -182,12 +182,12 @@ end
 ////////// Read DDR
 // address="0x3000'0000"
 
-localparam PW = 28-BW;
+localparam PW = 29-4-BW;
 
 reg [PW-1:0] ddram_page;
 
 assign ddram_burstcnt = 8'h1 << BW; // 128*8=1024
-assign ddram_addr = { 4'd3, ddram_page, {BW-3{1'b0}} };
+assign ddram_addr = { 4'd3, ddram_page, {BW{1'b0}} };
 assign buffer_we  = ddram_wait;
 
 wire cnt_over = &ddram_cnt;
