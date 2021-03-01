@@ -48,7 +48,7 @@ module jtframe_mister_dwnld(
     input             hps_wr,
     input      [26:0] hps_addr,         // in WIDE mode address will be incremented by 2
     input      [ 7:0] hps_dout,
-    output reg        hps_wait,
+    output            hps_wait,
 
 (*keep*)    output reg        ioctl_rom_wr,
 (*keep*)    output reg        ioctl_ram,
@@ -139,6 +139,8 @@ jtframe_dual_ram #(.dw(64),.aw(BW)) u_buffer(
 reg ddr_dwn, last_dwn, last_dwnbusy, wr_latch;
 reg dump_we;
 
+assign hps_wait = ddr_dwn;
+
 // download signals mux
 always @(*) begin
     ioctl_rom_wr = ddr_dwn ? dump_we :
@@ -153,7 +155,6 @@ always @(posedge clk, posedge rst) begin
         wr_latch    <= 0;
         last_dwn    <= 0;
         ddr_dwn     <= 0;
-        hps_wait    <= 0;
         downloading <= 0;
     end else begin
         last_dwn <= hps_download;
@@ -164,16 +165,14 @@ always @(posedge clk, posedge rst) begin
         end else begin
             if( hps_wr && hps_index==IDX_ROM ) wr_latch <= 1;
         end
-        if( !hps_download && last_dwn ) begin
+        if( !hps_download && last_dwn && downloading ) begin
             if( wr_latch )
                 downloading <= 0;   // regular download
             else begin
                 ddr_dwn  <= 1;
-                hps_wait <= 1;
             end
         end
         if( last_dwnbusy && !dwnld_busy ) begin
-            hps_wait    <= 0;
             downloading <= 0;
             ddr_dwn     <= 0;
         end
