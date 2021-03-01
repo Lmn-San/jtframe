@@ -245,16 +245,15 @@ always @(posedge clk, posedge rst) begin
             st      <= 2'd0;
         end else
         if( !tx_done ) begin
-            if( st==0 )
+            if( st==1 && dump_cnt[2:0]==3'd0 ) begin
                 dump_ser <= dump_data;
-            else if( st==2 && prog_rdy ) begin
-                dump_ser <= dump_ser>>8;
-                dump_cnt <= dump_cnt+1'd1;
             end
-            dump_we <= st==2'd1;
+            dump_we <= st==2'd2;
             case( st )
                 default: st <= st+1'd1;
-                2: if( prog_rdy ) begin
+                3: if( prog_rdy ) begin
+                    dump_ser <= dump_ser>>8;
+                    dump_cnt <= dump_cnt+1'd1;
                     st <= &dump_cnt[2:0] ? 2'd0 : 2'd1;
                     if( &dump_cnt[BW+2:0] ) tx_done<=1;
                 end

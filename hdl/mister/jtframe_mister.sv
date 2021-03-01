@@ -77,6 +77,7 @@ module jtframe_mister #(parameter
     output          FB_PAL_WR,
  `endif
 
+    // DDR3 RAM
     output          DDRAM_CLK,
     input           DDRAM_BUSY,
     output  [7:0]   DDRAM_BURSTCNT,
@@ -87,17 +88,6 @@ module jtframe_mister #(parameter
     output [63:0]   DDRAM_DIN,
     output  [7:0]   DDRAM_BE,
     output          DDRAM_WE,
-
-    // DDR3 RAM
-    input           ddram_busy,
-    output   [ 7:0] ddram_burstcnt,
-    output   [28:0] ddram_addr,
-    input    [63:0] ddram_dout,
-    input           ddram_dout_ready,
-    output          ddram_rd,
-    output   [63:0] ddram_din,
-    output   [ 7:0] ddram_be,
-    output          ddram_we,
 
     // ROM programming
     output       [26:0] ioctl_addr,
@@ -257,6 +247,8 @@ jtframe_mister_dwnld u_dwnld(
     .rst            ( rst            ),
     .clk            ( clk_rom        ),
 
+    .prog_we        ( prog_we        ),
+    .prog_rdy       ( prog_rdy       ),
     .downloading    ( downloading    ),
     .dwnld_busy     ( dwnld_busy     ),
 
@@ -459,40 +451,42 @@ jtframe_board #(
 );
 
 `ifdef JTFRAME_VERTICAL
-screen_rotate u_rotate(
-    .CLK_VIDEO      ( scan2x_clk     ),
-    .CE_PIXEL       ( scan2x_cen     ),
+    screen_rotate u_rotate(
+        .CLK_VIDEO      ( scan2x_clk     ),
+        .CE_PIXEL       ( scan2x_cen     ),
 
-    .VGA_R          ( scan2x_r       ),
-    .VGA_G          ( scan2x_g       ),
-    .VGA_B          ( scan2x_b       ),
-    .VGA_HS         ( scan2x_hs      ),
-    .VGA_VS         ( scan2x_vs      ),
-    .VGA_DE         ( scan2x_de      ),
+        .VGA_R          ( scan2x_r       ),
+        .VGA_G          ( scan2x_g       ),
+        .VGA_B          ( scan2x_b       ),
+        .VGA_HS         ( scan2x_hs      ),
+        .VGA_VS         ( scan2x_vs      ),
+        .VGA_DE         ( scan2x_de      ),
 
-    .rotate_ccw     ( 1'b0           ),
-    .no_rotate      ( ~rotate[0]     ),
+        .rotate_ccw     ( 1'b0           ),
+        .no_rotate      ( ~rotate[0]     ),
 
-    .FB_EN          ( FB_EN          ),
-    .FB_FORMAT      ( FB_FORMAT      ),
-    .FB_WIDTH       ( FB_WIDTH       ),
-    .FB_HEIGHT      ( FB_HEIGHT      ),
-    .FB_BASE        ( FB_BASE        ),
-    .FB_STRIDE      ( FB_STRIDE      ),
-    .FB_VBL         ( FB_VBL         ),
-    .FB_LL          ( FB_LL          ),
+        .FB_EN          ( FB_EN          ),
+        .FB_FORMAT      ( FB_FORMAT      ),
+        .FB_WIDTH       ( FB_WIDTH       ),
+        .FB_HEIGHT      ( FB_HEIGHT      ),
+        .FB_BASE        ( FB_BASE        ),
+        .FB_STRIDE      ( FB_STRIDE      ),
+        .FB_VBL         ( FB_VBL         ),
+        .FB_LL          ( FB_LL          ),
 
-    //muxed
-    .DDRAM_BUSY     ( rot_busy       ),
-    .DDRAM_BURSTCNT ( rot_burstcnt   ),
-    .DDRAM_ADDR     ( rot_addr       ),
-    .DDRAM_BE       ( rot_be         ),
-    .DDRAM_WE       ( rot_we         ),
-    .DDRAM_RD       ( rot_rd         ),
-    // umuxed
-    .DDRAM_CLK      (                ), // same as clk_rom
-    .DDRAM_DIN      ( DDRAM_DIN      )
-);
+        //muxed
+        .DDRAM_BUSY     ( rot_busy       ),
+        .DDRAM_BURSTCNT ( rot_burstcnt   ),
+        .DDRAM_ADDR     ( rot_addr       ),
+        .DDRAM_BE       ( rot_be         ),
+        .DDRAM_WE       ( rot_we         ),
+        .DDRAM_RD       ( rot_rd         ),
+        // umuxed
+        .DDRAM_CLK      (                ), // same as clk_rom
+        .DDRAM_DIN      ( DDRAM_DIN      )
+    );
+`else
+    assign DDRAM_DIN=64'd0;
 `endif
 
 jtframe_mr_ddrmux u_ddrmux(

@@ -48,7 +48,7 @@ always @(posedge clk) ticks<=ticks+1;
 assign hps_download = ticks==10;
 
 // programmer model
-assign prog_we  = prog_sh[0];
+assign prog_we  = |prog_sh;
 assign prog_rdy = prog_sh[9];
 
 always @(posedge clk, posedge rst) begin
@@ -58,7 +58,7 @@ always @(posedge clk, posedge rst) begin
     end else begin
         prog_sh <= prog_sh<<1;
         if( ioctl_rom_wr ) begin
-            if( ioctl_addr<27'h1_0000 ) begin
+            if( ioctl_addr<27'h0FFF ) begin
                 dwnld_busy <= 1;
                 prog_sh[0] <= 1;
             end else begin
@@ -131,7 +131,7 @@ jtframe_mister_dwnld uut(
 initial begin
     $dumpfile("test.lxt");
     $dumpvars;
-    #1000_000 $finish;
+    #1100_000 $finish;
 end
 
 endmodule
