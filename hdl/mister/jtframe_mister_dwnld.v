@@ -51,10 +51,10 @@ module jtframe_mister_dwnld(
     input      [ 7:0] hps_dout,
     output reg        hps_wait,
 
-    output reg        ioctl_rom_wr,
-    output reg        ioctl_ram,
-    output reg [26:0] ioctl_addr,
-    output reg [ 7:0] ioctl_dout,
+(*keep*)    output reg        ioctl_rom_wr,
+(*keep*)    output reg        ioctl_ram,
+(*keep*)    output reg [26:0] ioctl_addr,
+(*keep*)    output reg [ 7:0] ioctl_dout,
 
     // Configuration
     output reg [ 6:0] core_mod,
