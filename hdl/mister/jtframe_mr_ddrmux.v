@@ -32,13 +32,13 @@ module jtframe_mr_ddrmux(
     input   [ 7:0] rot_be,
     output         rot_busy,
     // DDR Signals
-    output         ddr_clk,
-    input          ddr_busy,
-    output  [ 7:0] ddr_burstcnt,
-    output  [28:0] ddr_addr,
-    output         ddr_rd,
-    output  [ 7:0] ddr_be,
-    output         ddr_we
+(*keep*)    output         ddr_clk,
+(*keep*)    input          ddr_busy,
+(*keep*)    output  [ 7:0] ddr_burstcnt,
+(*keep*)    output  [28:0] ddr_addr,
+(*keep*)    output         ddr_rd,
+(*keep*)    output  [ 7:0] ddr_be,
+(*keep*)    output         ddr_we
 );
 
 `ifdef JTFRAME_MR_DDRLOAD
@@ -57,16 +57,20 @@ localparam DDREN = DDRLOAD[0] || VERTICAL[0];
 
 reg ddrld_en;
 
-always @(*) begin
-    case( {DDRLOAD[0], VERTICAL[0]} )
-        2'b00: ddrld_en=0; // don't care
-        2'b10: ddrld_en=1;
-        2'b01: ddrld_en=0;
-        2'b11: ddrld_en=downloading;
-    endcase
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        ddrld_en <= 0;
+    end else if(!ddr_busy) begin
+        case( {DDRLOAD[0], VERTICAL[0]} )
+            2'b00: ddrld_en <= 0; // don't care
+            2'b10: ddrld_en <= 1;
+            2'b01: ddrld_en <= 0;
+            2'b11: ddrld_en <= downloading;
+        endcase
+    end
 end
 
-assign ddr_clk = DDREN && clk;
+assign ddr_clk = clk;
 
 // This simple mux allows for bad data transfers when switching from ROM download
 // to the frame buffer, but it shouldn't be a problem

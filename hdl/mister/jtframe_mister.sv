@@ -78,16 +78,16 @@ module jtframe_mister #(parameter
  `endif
 
     // DDR3 RAM
-    output          DDRAM_CLK,
-    input           DDRAM_BUSY,
-    output  [7:0]   DDRAM_BURSTCNT,
-    output [28:0]   DDRAM_ADDR,
-    input  [63:0]   DDRAM_DOUT,
-    input           DDRAM_DOUT_READY,
-    output          DDRAM_RD,
-    output [63:0]   DDRAM_DIN,
-    output  [7:0]   DDRAM_BE,
-    output          DDRAM_WE,
+(*keep*)    output          DDRAM_CLK,
+(*keep*)    input           DDRAM_BUSY,
+(*keep*)    output  [7:0]   DDRAM_BURSTCNT,
+(*keep*)    output [28:0]   DDRAM_ADDR,
+(*keep*)    input  [63:0]   DDRAM_DOUT,
+(*keep*)    input           DDRAM_DOUT_READY,
+(*keep*)    output          DDRAM_RD,
+(*keep*)    output [63:0]   DDRAM_DIN,
+(*keep*)    output  [7:0]   DDRAM_BE,
+(*keep*)    output          DDRAM_WE,
 
     // ROM programming
     output       [26:0] ioctl_addr,

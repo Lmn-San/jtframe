@@ -239,6 +239,7 @@ always @(posedge clk, posedge rst) begin
         dump_cnt <= 27'd0;
         dump_we  <= 0;
         dump_ser <= 64'd0;
+        st       <= 2'd0;
     end else begin
         if( tx_start ) begin
             tx_done <= 0;
