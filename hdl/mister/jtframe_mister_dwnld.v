@@ -31,7 +31,6 @@ DDRAM Signals
   {},
 ]}
 
-
 */
 
 module jtframe_mister_dwnld(
@@ -62,12 +61,12 @@ module jtframe_mister_dwnld(
     output     [31:0] dipsw,
 
     // DDR3 RAM
-    input             ddram_busy,
-    output     [ 7:0] ddram_burstcnt,
-    output     [28:0] ddram_addr,
-    input      [63:0] ddram_dout,
-    input             ddram_dout_ready,
-    output reg        ddram_rd
+(*keep*)    input             ddram_busy,
+(*keep*)    output     [ 7:0] ddram_burstcnt,
+(*keep*)    output     [28:0] ddram_addr,
+(*keep*)    input      [63:0] ddram_dout,
+(*keep*)    input             ddram_dout_ready,
+(*keep*)    output reg        ddram_rd
 );
 
 localparam [7:0] IDX_ROM   = 8'h0,
@@ -231,6 +230,7 @@ end
 
 reg [ 1:0] st;
 reg        next_wr;
+reg [ 5:0] timeout;
 
 // Send to core
 always @(posedge clk, posedge rst) begin
@@ -240,19 +240,22 @@ always @(posedge clk, posedge rst) begin
         dump_we  <= 0;
         dump_ser <= 64'd0;
         st       <= 2'd0;
+        timeout  <= 5'd0;
     end else begin
         if( tx_start ) begin
             tx_done <= 0;
             st      <= 2'd0;
+            timeout <= 5'd0;
         end else
         if( !tx_done ) begin
             if( st==1 && dump_cnt[2:0]==3'd0 ) begin
                 dump_ser <= dump_data;
             end
             dump_we <= st==2'd2;
+            timeout <= st==2'd2 ? 5'd0 : (timeout+1'd1);
             case( st )
                 default: st <= st+1'd1;
-                3: if( prog_rdy ) begin
+                3: if( prog_rdy || (&timeout) ) begin
                     dump_ser <= dump_ser>>8;
                     dump_cnt <= dump_cnt+1'd1;
                     st <= &dump_cnt[2:0] ? 2'd0 : 2'd1;

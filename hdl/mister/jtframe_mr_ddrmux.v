@@ -24,7 +24,7 @@ module jtframe_mr_ddrmux(
     input   [ 7:0] ddrld_burstcnt,
     input   [28:0] ddrld_addr,
     input          ddrld_rd,
-    output         ddrld_busy,
+(*keep*)    output         ddrld_busy,
     // Rotation signals
     input          rot_clk,
     input   [ 7:0] rot_burstcnt,
