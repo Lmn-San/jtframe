@@ -1382,16 +1382,16 @@ wire        clk_vid, ce_pix, clk_ihdmi, ce_hpix;
 wire        vga_force_scaler;
 
 `ifdef USE_DDRAM
-(*keep*)	wire        ram_clk;
-(*keep*)	wire [28:0] ram_address;
-(*keep*)	wire [7:0]  ram_burstcount;
-(*keep*)	wire        ram_waitrequest;
-(*keep*)	wire [63:0] ram_readdata;
-(*keep*)	wire        ram_readdatavalid;
-(*keep*)	wire        ram_read;
-(*keep*)	wire [63:0] ram_writedata;
-(*keep*)	wire [7:0]  ram_byteenable;
-(*keep*)	wire        ram_write;
+wire        ram_clk;
+wire [28:0] ram_address;
+wire [7:0]  ram_burstcount;
+wire        ram_waitrequest;
+wire [63:0] ram_readdata;
+wire        ram_readdatavalid;
+wire        ram_read;
+wire [63:0] ram_writedata;
+wire [7:0]  ram_byteenable;
+wire        ram_write;
 `endif
 
 wire        led_user;

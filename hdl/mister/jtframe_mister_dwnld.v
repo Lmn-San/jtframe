@@ -50,10 +50,10 @@ module jtframe_mister_dwnld(
     input      [ 7:0] hps_dout,
     output            hps_wait,
 
-(*keep*)    output reg        ioctl_rom_wr,
-(*keep*)    output reg        ioctl_ram,
-(*keep*)    output reg [26:0] ioctl_addr,
-(*keep*)    output reg [ 7:0] ioctl_dout,
+    output reg        ioctl_rom_wr,
+    output reg        ioctl_ram,
+    output reg [26:0] ioctl_addr,
+    output reg [ 7:0] ioctl_dout,
 
     // Configuration
     output reg [ 6:0] core_mod,
@@ -61,12 +61,12 @@ module jtframe_mister_dwnld(
     output     [31:0] dipsw,
 
     // DDR3 RAM
-(*keep*)    input             ddram_busy,
-(*keep*)    output     [ 7:0] ddram_burstcnt,
-(*keep*)    output     [28:0] ddram_addr,
-(*keep*)    input      [63:0] ddram_dout,
-(*keep*)    input             ddram_dout_ready,
-(*keep*)    output reg        ddram_rd
+    input             ddram_busy,
+    output     [ 7:0] ddram_burstcnt,
+    output     [28:0] ddram_addr,
+    input      [63:0] ddram_dout,
+    input             ddram_dout_ready,
+    output reg        ddram_rd
 );
 
 localparam [7:0] IDX_ROM   = 8'h0,
