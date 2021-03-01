@@ -35,6 +35,10 @@
 	`define USE_DDRAM
 `endif
 
+`ifdef JTFRAME_MR_DDRLOAD
+	`define USE_DDRAM
+`endif
+
 module sys_top
 (
 	/////////// CLOCK //////////

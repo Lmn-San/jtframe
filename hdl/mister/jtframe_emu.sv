@@ -577,18 +577,18 @@ end
     // clock inputs
     // By default clk is 48MHz, but JTFRAME_CLK96 overrides it to 96MHz
     .clk          ( clk_rom          ),
-    `ifdef JTFRAME_CLK96
+`ifdef JTFRAME_CLK96
     .clk96        ( clk96            ),
-    `endif
-    `ifdef JTFRAME_CLK48
+`endif
+`ifdef JTFRAME_CLK48
     .clk48        ( clk48            ),
-    `endif
-    `ifdef JTFRAME_CLK24
+`endif
+`ifdef JTFRAME_CLK24
     .clk24        ( clk24            ),
-    `endif
-    `ifdef JTFRAME_CLK6
+`endif
+`ifdef JTFRAME_CLK6
     .clk6         ( clk6             ),
-    `endif
+`endif
     .pxl2_cen     ( pxl2_cen         ),
     .pxl_cen      ( pxl_cen          ),
 
@@ -635,7 +635,7 @@ end
     .data_read   ( sdram_dout     ),
     .refresh_en  ( rfsh_en        ),
 
-    `ifdef JTFRAME_SDRAM_BANKS
+`ifdef JTFRAME_SDRAM_BANKS
     // Bank 0: allows R/W
     .ba0_addr   ( ba0_addr      ),
     .ba0_rd     ( ba0_rd        ),
@@ -662,23 +662,23 @@ end
     .ba3_rd     ( ba3_rd        ),
     .ba3_rdy    ( ba3_rdy       ),
     .ba3_ack    ( ba3_ack       ),
-    `else
+`else
     .loop_rst   ( 1'b0          ),
     .sdram_req  ( ba0_rd        ),
     .sdram_addr ( ba0_addr      ),
     .data_rdy   ( ba0_rdy | prog_rdy ),
     .sdram_ack  ( ba0_ack | prog_ack ),
-    `endif
+`endif
 
     // ROM-load interface
-    `ifdef JTFRAME_SDRAM_BANKS
+`ifdef JTFRAME_SDRAM_BANKS
     .prog_ba    ( prog_ba       ),
     .prog_rdy   ( prog_rdy      ),
     .prog_ack   ( prog_ack      ),
     .prog_data  ( prog_data     ),
-    `else
+`else
     .prog_data  ( prog_data8    ),
-    `endif
+`endif
     .prog_addr  ( prog_addr     ),
     .prog_rd    ( prog_rd       ),
     .prog_we    ( prog_we       ),
@@ -691,16 +691,16 @@ end
     .dip_flip     ( dip_flip         ),
     .dip_test     ( dip_test         ),
     .dip_fxlevel  ( dip_fxlevel      ),
-    `ifdef JTFRAME_MRA_DIP
+`ifdef JTFRAME_MRA_DIP
     .dipsw        ( dipsw            ),
-    `endif
+`endif
 
-    `ifdef STEREO_GAME
+`ifdef STEREO_GAME
     .snd_left     ( snd_left         ),
     .snd_right    ( snd_right        ),
-    `else
+`else
     .snd          ( snd_left         ),
-    `endif
+`endif
     .gfx_en       ( gfx_en           ),
 
     // unconnected

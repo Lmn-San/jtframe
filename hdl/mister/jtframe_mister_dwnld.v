@@ -51,10 +51,10 @@ module jtframe_mister_dwnld(
     input      [ 7:0] hps_dout,
     output reg        hps_wait,
 
-    output            ioctl_rom_wr,
+    output reg        ioctl_rom_wr,
     output reg        ioctl_ram,
-    output     [26:0] ioctl_addr,
-    output     [ 7:0] ioctl_dout,
+    output reg [26:0] ioctl_addr,
+    output reg [ 7:0] ioctl_dout,
 
     // Configuration
     output reg [ 6:0] core_mod,
@@ -67,7 +67,7 @@ module jtframe_mister_dwnld(
     output     [28:0] ddram_addr,
     input      [63:0] ddram_dout,
     input             ddram_dout_ready,
-    output            ddram_rd
+    output reg        ddram_rd
 );
 
 localparam [7:0] IDX_ROM   = 8'h0,
@@ -120,6 +120,7 @@ reg  [  26:0] dump_cnt;
 wire [  63:0] dump_data;
 reg  [  63:0] dump_ser;
 reg           tx_start, tx_done;
+wire          buffer_we;
 
 jtframe_dual_ram #(.dw(64),.aw(BW)) u_buffer(
     .clk0   ( clk        ),
@@ -127,7 +128,7 @@ jtframe_dual_ram #(.dw(64),.aw(BW)) u_buffer(
     // Port 0: write
     .data0  ( ddram_dout ),
     .addr0  ( ddram_cnt  ),
-    .we0    ( ~tx_done   ),
+    .we0    ( buffer_we  ),
     .q0     (            ),
     // Port 1: read
     .data1  (            ),
@@ -150,10 +151,11 @@ end
 // Detect DDR download start and stop conditions
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        wr_latch  <= 0;
-        last_dwn  <= 0;
-        ddr_dwn   <= 0;
-        hps_wait  <= 0;
+        wr_latch    <= 0;
+        last_dwn    <= 0;
+        ddr_dwn     <= 0;
+        hps_wait    <= 0;
+        downloading <= 0;
     end else begin
         last_dwn <= hps_download;
         last_dwnbusy <= dwnld_busy;
@@ -186,8 +188,9 @@ localparam PW = 28-BW;
 
 reg [PW-1:0] ddram_page;
 
-assign ddram_burstcnt = 8'h1 << (BW-1); // 128*8=1024
+assign ddram_burstcnt = 8'h1 << BW; // 128*8=1024
 assign ddram_addr = { 4'd3, ddram_page, {BW-3{1'b0}} };
+assign buffer_we  = ddram_wait;
 
 wire cnt_over = &ddram_cnt;
 reg ddram_wait;
@@ -235,6 +238,7 @@ always @(posedge clk, posedge rst) begin
         tx_done  <= 1;
         dump_cnt <= 27'd0;
         dump_we  <= 0;
+        dump_ser <= 64'd0;
     end else begin
         if( tx_start ) begin
             tx_done <= 0;
@@ -252,7 +256,7 @@ always @(posedge clk, posedge rst) begin
                 default: st <= st+1'd1;
                 2: if( prog_rdy ) begin
                     st <= &dump_cnt[2:0] ? 2'd0 : 2'd1;
-                    if( &dump_cnt[BW-1:0] ) tx_done<=1;
+                    if( &dump_cnt[BW+2:0] ) tx_done<=1;
                 end
             endcase
         end
