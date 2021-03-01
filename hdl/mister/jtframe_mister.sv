@@ -217,7 +217,7 @@ wire [ 7:0] rot_be;
 // Fast DDR load
 wire [ 7:0] ddrld_burstcnt;
 wire [28:0] ddrld_addr;
-wire        ddrld_rd;
+wire        ddrld_rd, ddrld_busy;
 
 assign { voffset, hoffset } = status[31:24];
 
@@ -270,7 +270,7 @@ jtframe_mister_dwnld u_dwnld(
     .dipsw          ( dipsw          ),
 
     // DDR
-    .ddram_busy     ( DDRAM_BUSY       ),
+    .ddram_busy     ( ddrld_busy       ),
     .ddram_burstcnt ( ddrld_burstcnt   ),
     .ddram_addr     ( ddrld_addr       ),
     .ddram_dout     ( DDRAM_DOUT       ),
@@ -450,6 +450,8 @@ jtframe_board #(
     .gfx_en         ( gfx_en          )
 );
 
+wire rot_clk;
+
 `ifdef JTFRAME_VERTICAL
     screen_rotate u_rotate(
         .CLK_VIDEO      ( scan2x_clk     ),
@@ -482,22 +484,25 @@ jtframe_board #(
         .DDRAM_WE       ( rot_we         ),
         .DDRAM_RD       ( rot_rd         ),
         // umuxed
-        .DDRAM_CLK      (                ), // same as clk_rom
+        .DDRAM_CLK      ( rot_clk        ), // same as clk_rom
         .DDRAM_DIN      ( DDRAM_DIN      )
     );
 `else
     assign DDRAM_DIN=64'd0;
+    assign rot_clk = clk_rom;
 `endif
 
 jtframe_mr_ddrmux u_ddrmux(
     .rst            ( rst             ),
-    .clk            ( clk_sys         ),
+    .clk            ( clk_rom         ),
     .downloading    ( downloading     ),
     // Fast DDR load
     .ddrld_burstcnt ( ddrld_burstcnt  ),
     .ddrld_addr     ( ddrld_addr      ),
     .ddrld_rd       ( ddrld_rd        ),
+    .ddrld_busy     ( ddrld_busy      ),
     // Rotation signals
+    .rot_clk        ( rot_clk         ),
     .rot_burstcnt   ( rot_burstcnt    ),
     .rot_addr       ( rot_addr        ),
     .rot_rd         ( rot_rd          ),

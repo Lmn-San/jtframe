@@ -24,7 +24,9 @@ module jtframe_mr_ddrmux(
     input   [ 7:0] ddrld_burstcnt,
     input   [28:0] ddrld_addr,
     input          ddrld_rd,
+    output         ddrld_busy,
     // Rotation signals
+    input          rot_clk,
     input   [ 7:0] rot_burstcnt,
     input   [28:0] rot_addr,
     input          rot_rd,
@@ -70,7 +72,7 @@ always @(posedge clk, posedge rst) begin
     end
 end
 
-assign ddr_clk = clk;
+assign ddr_clk = ddrld_en ? clk : rot_clk;
 
 // This simple mux allows for bad data transfers when switching from ROM download
 // to the frame buffer, but it shouldn't be a problem
@@ -80,6 +82,8 @@ assign ddr_addr     = ddrld_en ? ddrld_addr     : rot_addr;
 assign ddr_rd       = ddrld_en ? ddrld_rd       : rot_rd;
 assign ddr_be       = ddrld_en ? 8'hff          : rot_be;
 assign ddr_we       = ddrld_en ? 1'b0           : rot_we;
-assign rot_busy     = ddrld_en | ddr_busy;
+
+assign ddrld_busy   = ~ddrld_en | ddr_busy;
+assign rot_busy     =  ddrld_en | ddr_busy;
 
 endmodule
